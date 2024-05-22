@@ -1,7 +1,8 @@
 from docx import Document
 import os
 import shutil
-import sys
+import tkinter as tk
+from tkinter import filedialog, messagebox
 
 def count_words_in_docx(doc_path):
     try:
@@ -21,14 +22,9 @@ def count_words_in_docx(doc_path):
         return None
 
 def sort_files_by_word_count(folder_path, word_limit):
-    # Verify if the folder path exists
-    if not os.path.isdir(folder_path):
-        print(f"The folder path '{folder_path}' does not exist.")
-        sys.exit(1)
-    
     # Create folders for sorting
-    more_words_folder = os.path.join(folder_path, "Over Word Count")
-    less_words_folder = os.path.join(folder_path, "Under Word Count")
+    more_words_folder = os.path.join(folder_path, "more_words")
+    less_words_folder = os.path.join(folder_path, "less_words")
     os.makedirs(more_words_folder, exist_ok=True)
     os.makedirs(less_words_folder, exist_ok=True)
     
@@ -51,18 +47,42 @@ def sort_files_by_word_count(folder_path, word_limit):
                 except Exception as e:
                     print(f"Error moving file '{filename}': {e}")
 
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python sort_files.py <path_to_folder> <word_count_limit>")
-        sys.exit(1)
-    
-    folder_path = sys.argv[1]
+def select_folder():
+    folder_selected = filedialog.askdirectory()
+    folder_path.set(folder_selected)
+
+def start_sorting():
+    folder = folder_path.get()
     try:
-        word_limit = int(sys.argv[2])
+        word_limit = int(word_limit_entry.get())
     except ValueError:
-        print("The word count limit must be an integer.")
-        sys.exit(1)
+        messagebox.showerror("Invalid Input", "The word count limit must be an integer.")
+        return
     
-    print(f"Folder path: {folder_path}")
-    print(f"Word count limit: {word_limit}")
-    sort_files_by_word_count(folder_path, word_limit)
+    if not folder:
+        messagebox.showerror("Invalid Input", "Please select a folder.")
+        return
+
+    sort_files_by_word_count(folder, word_limit)
+    messagebox.showinfo("Success", "Files have been sorted successfully.")
+
+# Set up the GUI
+root = tk.Tk()
+root.title("Word Document Sorter")
+
+folder_path = tk.StringVar()
+
+# Folder selection
+tk.Label(root, text="Select Folder:").grid(row=0, column=0, padx=10, pady=10)
+tk.Entry(root, textvariable=folder_path, width=50).grid(row=0, column=1, padx=10, pady=10)
+tk.Button(root, text="Browse", command=select_folder).grid(row=0, column=2, padx=10, pady=10)
+
+# Word count limit input
+tk.Label(root, text="Word Count Limit:").grid(row=1, column=0, padx=10, pady=10)
+word_limit_entry = tk.Entry(root, width=10)
+word_limit_entry.grid(row=1, column=1, padx=10, pady=10)
+
+# Start button
+tk.Button(root, text="Start Sorting", command=start_sorting).grid(row=2, column=0, columnspan=3, pady=20)
+
+root.mainloop()
