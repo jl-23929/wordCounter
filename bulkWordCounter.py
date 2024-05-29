@@ -35,11 +35,13 @@ def sort_files_by_word_count(folder_path, word_limit):
             print(f"Processing file: {doc_path}")
             word_count = count_words_in_docx(doc_path)
             if word_count is not None:
-                if word_count >= word_limit:
-                    new_path = os.path.join(more_words_folder, filename)
+               
+                new_filename = f"{word_count}_words_{filename}"
+
+                if word_count > word_limit:
+                    new_path = os.path.join(more_words_folder, new_filename)
                 else:
-                    new_path = os.path.join(less_words_folder, filename)
-                
+                    new_path = os.path.join(less_words_folder, new_filename)
                 try:
                     # Move the file to the appropriate folder
                     shutil.move(doc_path, new_path)
