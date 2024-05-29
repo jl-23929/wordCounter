@@ -3,17 +3,19 @@ import glob
 import re
 import logging
 from docx import Document
+import tkinter
+from tkinter import filedialog, messagebox
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-def batch_find_replace_delete_and_remove_chars(folder_path, find_chars, replace_text, delete_chars, output_folder):
+def batch_find_replace_delete_and_remove_chars(folder_path, find_chars, replace_text, delete_chars):
     # Get all docx files in the specified folder
     docx_files = glob.glob(os.path.join(folder_path, '*.docx'))
     
-    # Create the output subfolders
-    above_2000_folder = os.path.join(output_folder, 'Above 2000')
-    already_under_2000_folder = os.path.join(output_folder, 'Already under 2000')
+    # Create the output     
+    above_2000_folder = os.path.join(folder_path, 'Above ' + str(word_limit_entry.get())) 
+    already_under_2000_folder = os.path.join(folder_path, 'Already under ' + str(word_limit_entry.get()))
     os.makedirs(above_2000_folder, exist_ok=True)
     os.makedirs(already_under_2000_folder, exist_ok=True)
     
@@ -41,7 +43,7 @@ def batch_find_replace_delete_and_remove_chars(folder_path, find_chars, replace_
             word_count = get_word_count(doc)
             
             # Determine the output subfolder based on word count
-            if word_count > 2000:
+            if word_count > int(word_limit_entry.get()):
                 output_subfolder = above_2000_folder
             else:
                 output_subfolder = already_under_2000_folder
@@ -87,9 +89,24 @@ def get_word_count(doc):
         logging.error(f"Error counting words: {e}")
         return 0
 
-# Define input and output folder paths
-input_folder = r'C:\Users\scott.jones\OneDrive - Brisbane Grammar School\Desktop\Cookie Monster\Insert your PDFs\Converted'
-output_folder = r'C:\Users\scott.jones\OneDrive - Brisbane Grammar School\Desktop\Cookie Monster\Insert your PDFs\Converted\Completed'
+input_folder = ''
+
+def select_folder():
+    global input_folder
+    folder_selected = filedialog.askdirectory()
+    input_folder = folder_selected
+
+window = tkinter.Tk()
+
+window.title("Cookie Monster")
+
+tkinter.Label(window, text="Select Folder:").grid(row=0, column=0, padx=10, pady=10)
+tkinter.Entry(window, text=input_folder, width=50).grid(row=0, column=1, padx=10, pady=10)
+tkinter.Button(window, text="Browse", command=select_folder).grid(row=0, column=2, padx=10, pady=10)
+
+tkinter.Label(window, text="Word Count Limit:").grid(row=1, column=0, padx=10, pady=10)
+word_limit_entry = tkinter.Entry(window, width=10)
+word_limit_entry.grid(row=1, column=1, padx=10, pady=10)
 
 # Define characters to find and replace with space (excluding "-", "_", "–", "⇌", and "⟶")
 find_chars = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ',', '.', '?', '!', ':', ';', '(', ')', '[', ']', '{', '}', '/', '\\', '*', '+', '=', '|', '&', '^', '%', '@', '~', '`', '"', "'", '°', '𝜃', '−', '×', '±', '≈', '∆', '>', '<', '>=', '<=', '=']
@@ -100,5 +117,11 @@ replace_text = ' '
 # Define characters to delete (only if surrounded by spaces)
 delete_chars = ['M', 'V', 'Z', 'C', 'Q', 'Cu', 'Zn', 'Ag', 'NO', 'KNO', 'MnO', 'NaCl', 'kPa', 'mL', 'L', 'aq', 'l', 's', 'g', 'x']
 
-# Perform batch find, replace, delete, and remove hyphen, underscore, en dash, "⇌", and "⟶"
-batch_find_replace_delete_and_remove_chars(input_folder, find_chars, replace_text, delete_chars, output_folder)
+def start_sorting():
+    batch_find_replace_delete_and_remove_chars(input_folder, find_chars, replace_text, delete_chars)
+    messagebox.showinfo("Success", "Files have been sorted successfully.")
+
+
+tkinter.Button(window, text="Start Sorting", command=start_sorting).grid(row=2, column=0, columnspan=3, pady=20)
+
+window.mainloop()

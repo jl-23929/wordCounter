@@ -76,7 +76,7 @@ folder_path = tk.StringVar()
 
 # Folder selection
 tk.Label(root, text="Select Folder:").grid(row=0, column=0, padx=10, pady=10)
-tk.Entry(root, textvariable=folder_path, width=50).grid(row=0, column=1, padx=10, pady=10)
+tk.Entry(root, text=folder_path, width=50).grid(row=0, column=1, padx=10, pady=10)
 tk.Button(root, text="Browse", command=select_folder).grid(row=0, column=2, padx=10, pady=10)
 
 # Word count limit input
