@@ -4,7 +4,7 @@ import re
 import logging
 from docx import Document
 import tkinter
-from tkinter import filedialog, messagebox
+from tkinter import messagebox, filedialog, ttk
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -13,18 +13,31 @@ def batch_find_replace_delete_and_remove_chars(folder_path, find_chars, replace_
     # Get all docx files in the specified folder
     docx_files = glob.glob(os.path.join(folder_path, '*.docx'))
     
+    num_files = 0
+
+    progress = 0
     # Create the output     
     above_2000_folder = os.path.join(folder_path, 'Above ' + str(word_limit_entry.get())) 
     already_under_2000_folder = os.path.join(folder_path, 'Already under ' + str(word_limit_entry.get()))
     os.makedirs(above_2000_folder, exist_ok=True)
     os.makedirs(already_under_2000_folder, exist_ok=True)
+
+    for docx_file in docx_files:
+        
+        num_files = num_files+1
     
     for docx_file in docx_files:
         try:
             logging.info(f"Processing file: {docx_file}")
             # Open each docx file
             doc = Document(docx_file)
-            
+            # Remove Bibliography
+            removeReferences(doc.paragraphs)
+
+            removeBibliography(doc.paragraphs)
+
+            removeInTextCitations(doc.paragraphs)
+
             # Process paragraphs
             process_paragraphs(doc.paragraphs, find_chars, replace_text, delete_chars)
             
@@ -54,6 +67,10 @@ def batch_find_replace_delete_and_remove_chars(folder_path, find_chars, replace_
             doc.save(output_file_path)
             logging.info(f"Modified {docx_file} and saved to {output_file_path}")
         
+            progress+1
+
+            
+
         except Exception as e:
             logging.error(f"Failed to process file {docx_file}: {e}")
 
@@ -88,8 +105,45 @@ def get_word_count(doc):
     except Exception as e:
         logging.error(f"Error counting words: {e}")
         return 0
-
+    
 input_folder = ''
+
+def removeBibliography(paragraphs):
+    inBibliography = False
+
+    for paragraph in paragraphs:
+
+        if inBibliography:
+            paragraph.clear()
+        elif re.match(r'Bibliography', paragraph.text) or re.match(r'Reference List', paragraph.text) or re.match(r'References', paragraph.text) or re.match(r'Citations', paragraph.text) or re.match(r'References Cited', paragraph.text):
+            
+            inBibliography = True
+
+            paragraph.clear()
+
+def removeInTextCitations(paragraphs):
+
+    for paragraph in paragraphs:
+        
+        updated_text = re.sub(r'\([^,]+, \d{4}\)', '', paragraph.text)
+        paragraph.text = updated_text
+
+def removeReferences(paragraphs):
+
+    for paragraph in paragraphs:
+
+      #  matches = re.findall(r'\.\s\(\d{4}\)\.', paragraph.text)
+
+      #  print(matches)
+
+     #   for match in matches:
+       #     paragraph.text = paragraph.text.replace(match, '')
+
+        updated_text = re.sub(r'.*\.\s\(\d{4}\)\.\s.*', '', paragraph.text)
+        paragraph.text = updated_text
+       # if re.match(r'\.\s\(\d{4}\)\.', paragraph.text):
+       #     print ('Paragraph Cleared')
+       #     paragraph.clear()
 
 def select_folder():
     global input_folder
@@ -99,6 +153,8 @@ def select_folder():
 window = tkinter.Tk()
 
 window.title("Cookie Monster")
+
+# window.set
 
 tkinter.Label(window, text="Select Folder:").grid(row=0, column=0, padx=10, pady=10)
 tkinter.Entry(window, text=input_folder, width=50).grid(row=0, column=1, padx=10, pady=10)
@@ -117,9 +173,22 @@ replace_text = ' '
 # Define characters to delete (only if surrounded by spaces)
 delete_chars = ['M', 'V', 'Z', 'C', 'Q', 'Cu', 'Zn', 'Ag', 'NO', 'KNO', 'MnO', 'NaCl', 'kPa', 'mL', 'L', 'aq', 'l', 's', 'g', 'x']
 
+
+def progressBar():
+    progressBarWindow = tkinter.Toplevel(window)
+    progressBarWindow.title("Progress Bar")
+    progressBar = ttk.Progressbar(progressBarWindow, orient="horizontal", mode="indeterminate", length=280)
+    progressBar.grid(column=0, row=1, columnspan=2)
+    progressBar.start()
+
+
 def start_sorting():
+    
     batch_find_replace_delete_and_remove_chars(input_folder, find_chars, replace_text, delete_chars)
+    progressBar()
     messagebox.showinfo("Success", "Files have been sorted successfully.")
+    progressBar
+
 
 
 tkinter.Button(window, text="Start Sorting", command=start_sorting).grid(row=2, column=0, columnspan=3, pady=20)
