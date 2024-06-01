@@ -7,8 +7,11 @@ import tkinter
 from tkinter import filedialog, messagebox
 from tkinter import *
 import customtkinter
-from PIL import Image
-
+from PIL import Image, ImageTk
+from pygame import mixer
+from pydub import AudioSegment
+from pydub.playback import play
+import time
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -73,8 +76,7 @@ def batch_find_replace_delete_and_remove_chars(folder_path, find_chars, replace_
             logging.info(f"Modified {docx_file} and saved to {output_file_path}")
         
             fileProgress = fileProgress+1
-            #progressBar.step()
-
+            print(fileProgress)
         except Exception as e:
             logging.error(f"Failed to process file {docx_file}: {e}")
 
@@ -160,21 +162,22 @@ def select_folder():
 # Define characters to find and replace with space (excluding "-", "_", "–", "⇌", and "⟶")
 find_chars = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ',', '.', '?', '!', ':', ';', '(', ')', '[', ']', '{', '}', '/', '\\', '*', '+', '=', '|', '&', '^', '%', '@', '~', '`', '"', "'", '°', '𝜃', '−', '×', '±', '≈', '∆', '>', '<', '>=', '<=', '=']
 
-# Define text to replace found characters with
 replace_text = ' '
 
 # Define characters to delete (only if surrounded by spaces)
 delete_chars = ['M', 'V', 'Z', 'C', 'Q', 'Cu', 'Zn', 'Ag', 'NO', 'KNO', 'MnO', 'NaCl', 'kPa', 'mL', 'L', 'aq', 'l', 's', 'g', 'x', 'J' 'KWh' 'kWh' 'cm' 'm', 'kW', 'W', 'MW', 'RPM', 'rpm']
 
 def start_sorting():
-    
+    #updateGif()
     batch_find_replace_delete_and_remove_chars(input_folder, find_chars, replace_text, delete_chars)
-    messagebox.showinfo("Success", "Files have been sorted successfully.")
+    os.startfile(input_folder)
+    playCount()
 
 
 window = customtkinter.CTk()
 
-window.geometry("700x400")
+window.geometry("700x400+600+300")
+#window.iconbitmap(r"\Monster.ico")
 
 window.title("Cookie Monster")
 window.resizable(0,0)
@@ -184,41 +187,101 @@ def selectFolder():
     folder_selected = filedialog.askdirectory()
     input_folder = folder_selected
 
-column1 = 0.1
-column2 = 0.2
-column3 = 0.35
+def get_asset_path(asset_type, filename):
+    base_path = os.path.dirname(__file__)
+    return os.path.join(base_path, 'assets', asset_type, filename)
 
-image_path = r"C:\Users\james680384\Pictures\Picture1.png"
+column1 = 0.1
+column2 = 0.3
+column3 = 0.45
+
+#gifWindow = customtkinter.CTkToplevel(window)
+#gifWindow.title("Progress")
+
+#gif_path = r"C:\Users\james680384\Downloads\Eating.gif"
+
+image_path = r"C:\Users\james680384\Documents\GitHub\wordCounter\Data\Cookie Monster Image.png"
+
+soundIconPath = r"C:\Users\james680384\Documents\GitHub\wordCounter\Data\noun-play-button-6441783-FFFFFF.png"
+
+soundStopPath = r"C:\Users\james680384\Documents\GitHub\wordCounter\Data\noun-stop-button-4906815-FFFFFF.png"
+
+pil_soundStopPath = Image.open(soundStopPath)
+
+
+pil_soundIconPath = Image.open(soundIconPath)
 
 pil_image = Image.open(image_path)
+#gifLabel = customtkinter.CTkLabel(gifWindow, text="")
+#gifLabel.place(relx=0.5, rely=0.6, anchor=CENTER)
+#gif_image = Image.open(gif_path)
+#gif_frames = []
+#try:
+#    while True:
+ #           frame = ImageTk.PhotoImage(gif_image.copy().convert("RGBA"))
+ #           gif_frames.append(frame)
+ #           gif_image.seek(len(gif_frames))
+#except EOFError:
+#    pass
+#def updateGif():
+#    global current_frame
+   # current_frame = 0
+#    if gif_frames:
+#        current_frame = (current_frame + 1) % len(gif_frames)
+#        gifLabel.configure(image=gif_frames[current_frame])
+#        gifWindow.after(100, updateGif)
+def playIntro():
+    mixer.music.load(r"Data\Cookie Instructions.mp3")
+    mixer.music.play()
 
+def stopIntro():
+    mixer.music.stop()
+
+def playCount(): 
+    mixer.music.load(r"Data\Documents Completed-[AudioTrimmer.com]-[AudioTrimmer.com].mp3")
+    mixer.music.play()
+    while mixer.music.get_busy():
+        time.sleep(1)
+    mixer.music.load(r"Data\Count's Laugh 1.mp3")
+    mixer.music.play()
+mixer.init()
+
+
+stopImage = customtkinter.CTkImage(light_image=pil_soundStopPath, dark_image=pil_soundStopPath, size=(50,50))
+soundImage = customtkinter.CTkImage(light_image=pil_soundIconPath, dark_image=pil_soundIconPath, size=(50, 50))
 image = customtkinter.CTkImage(light_image=pil_image, dark_image=pil_image, size=(200,200))
 imageLabel = customtkinter.CTkLabel(window, image=image, text="")
-imageLabel.place(relx = 0.25, rely = 0.7, anchor=CENTER)
+imageLabel.place(relx = 0.2, rely = 0.75, anchor=CENTER)
 
+soundImageButton = customtkinter.CTkButton(window, image=soundImage, text="", width=55, command=playIntro)
 
-bold = customtkinter.CTkFont(family="Arial Black", size=32, )
+soundImageButton.place(relx = 0.75, rely=0.3, anchor=CENTER)
+soundStopButton = customtkinter.CTkButton(window, image=stopImage, text="", width=55, command=stopIntro)
+soundStopButton.place(relx=0.85, rely=0.3, anchor=CENTER)
+bold = customtkinter.CTkFont(family="Arial Black", size=32)
+body = customtkinter.CTkFont(family="Arial", size=16)
+boldBody = customtkinter.CTkFont(family="Arial", size=25, weight="bold")
+
 
 infoHeading = customtkinter.CTkLabel(window, text="Cookie Monster", font=bold, text_color="#004f98")
 infoHeading.place(relx=0.5, rely=column1, anchor=CENTER)
 
-infoLabel = customtkinter.CTkLabel(window, text="To use Cookie Monster, ..................")
+infoLabel = customtkinter.CTkLabel(window, text="Select a folder of Word documents to \n process and enter a word limit. For \n more instructions press the play button.", font=body)
 infoLabel.place(relx=0.5, rely=column2, anchor=CENTER)
 
-selectFolderLabel = customtkinter.CTkLabel(window, text="Select Folder:")
+selectFolderLabel = customtkinter.CTkLabel(window, text="Select Folder:", font=body)
 selectFolderLabel.place(relx=0.2, rely = column3, anchor=CENTER)
 
-folderEntry = customtkinter.CTkEntry(window, placeholder_text="Enter a path or browse", width=160)
+folderEntry = customtkinter.CTkEntry(window, placeholder_text="Enter a path or browse", width=270, font=body)
 folderEntry.place(relx = 0.5, rely = column3, anchor=CENTER)
 
-browseButton = customtkinter.CTkButton(master=window, text="Browse", command=selectFolder)
+browseButton = customtkinter.CTkButton(master=window, text="Browse", command=selectFolder, font=body)
 browseButton.place(relx=0.8, rely=column3, anchor=CENTER)
 
-wordLimitEntry = customtkinter.CTkEntry(window, placeholder_text="Word Limit")
-wordLimitEntry.place(relx=0.5, rely = 0.5, anchor=CENTER)
+wordLimitEntry = customtkinter.CTkEntry(window, placeholder_text='Enter Word Limit', font=body)
+wordLimitEntry.place(relx=0.5, rely = 0.6, anchor=CENTER)
 
-
-sortButton = customtkinter.CTkButton(master=window, text="Start Sorting", command=start_sorting)
-sortButton.place(relx=0.5, rely=0.75, anchor = CENTER)
+sortButton = customtkinter.CTkButton(master=window, text="Cookie Time!", command=start_sorting, font=boldBody)
+sortButton.place(relx=0.5, rely=0.85, anchor = CENTER)
 
 window.mainloop()
