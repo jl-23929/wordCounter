@@ -167,7 +167,22 @@ replace_text = ' '
 # Define characters to delete (only if surrounded by spaces)
 delete_chars = ['M', 'V', 'Z', 'C', 'Q', 'Cu', 'Zn', 'Ag', 'NO', 'KNO', 'MnO', 'NaCl', 'kPa', 'mL', 'L', 'aq', 'l', 's', 'g', 'x', 'J' 'KWh' 'kWh' 'cm' 'm', 'kW', 'W', 'MW', 'RPM', 'rpm']
 
+def validate_and_get_word_limit(entry_widget):
+    try:
+        word_limit = int(entry_widget.get())
+        if word_limit <= 0:
+            entry_widget.configure(placeholder_text_color='red')
+            raise ValueError("Word limit must be greater than 0.")
+        entry_widget.configure(placeholder_text_color='black')
+        return word_limit
+    except ValueError:
+        entry_widget.configure(placeholder_text_color='red')
+        return None
+
 def start_sorting():
+    word_limit = validate_and_get_word_limit(wordLimitEntry)
+    if word_limit is None:
+        return
     #updateGif()
     batch_find_replace_delete_and_remove_chars(input_folder, find_chars, replace_text, delete_chars)
     os.startfile(input_folder)
@@ -176,9 +191,13 @@ def start_sorting():
 
 window = customtkinter.CTk()
 
-window.geometry("700x400+600+300")
-#window.iconbitmap(r"\Monster.ico")
+def get_absolute_path(relative_path):
+    base_path = os.path.dirname(__file__)
+    return os.path.join(base_path, relative_path)
 
+window.geometry("700x400+600+300")
+icon_path = get_absolute_path("Data/Monster.ico")
+window.iconbitmap(icon_path)
 window.title("Cookie Monster")
 window.resizable(0,0)
 customtkinter.set_default_color_theme("blue")
@@ -198,13 +217,11 @@ column3 = 0.45
 #gifWindow = customtkinter.CTkToplevel(window)
 #gifWindow.title("Progress")
 
-#gif_path = r"C:\Users\james680384\Downloads\Eating.gif"
+#gif_path = r"\Users\james680384\Downloads\Eating.gif"
 
-image_path = r"C:\Users\james680384\Documents\GitHub\wordCounter\Data\Cookie Monster Image.png"
-
-soundIconPath = r"C:\Users\james680384\Documents\GitHub\wordCounter\Data\noun-play-button-6441783-FFFFFF.png"
-
-soundStopPath = r"C:\Users\james680384\Documents\GitHub\wordCounter\Data\noun-stop-button-4906815-FFFFFF.png"
+image_path = get_absolute_path("Data/Cookie Monster Image.png")
+soundIconPath = get_absolute_path("Data/noun-play-button-6441783-FFFFFF.png")
+soundStopPath = get_absolute_path("Data/noun-stop-button-4906815-FFFFFF.png")
 
 pil_soundStopPath = Image.open(soundStopPath)
 
@@ -255,9 +272,9 @@ imageLabel.place(relx = 0.2, rely = 0.75, anchor=CENTER)
 
 soundImageButton = customtkinter.CTkButton(window, image=soundImage, text="", width=55, command=playIntro)
 
-soundImageButton.place(relx = 0.75, rely=0.3, anchor=CENTER)
+soundImageButton.place(relx = 0.8, rely=0.3, anchor=CENTER)
 soundStopButton = customtkinter.CTkButton(window, image=stopImage, text="", width=55, command=stopIntro)
-soundStopButton.place(relx=0.85, rely=0.3, anchor=CENTER)
+soundStopButton.place(relx=0.9, rely=0.3, anchor=CENTER)
 bold = customtkinter.CTkFont(family="Arial Black", size=32)
 body = customtkinter.CTkFont(family="Arial", size=16)
 boldBody = customtkinter.CTkFont(family="Arial", size=25, weight="bold")
@@ -276,7 +293,7 @@ folderEntry = customtkinter.CTkEntry(window, placeholder_text="Enter a path or b
 folderEntry.place(relx = 0.5, rely = column3, anchor=CENTER)
 
 browseButton = customtkinter.CTkButton(master=window, text="Browse", command=selectFolder, font=body)
-browseButton.place(relx=0.8, rely=column3, anchor=CENTER)
+browseButton.place(relx=0.85, rely=column3, anchor=CENTER)
 
 wordLimitEntry = customtkinter.CTkEntry(window, placeholder_text='Enter Word Limit', font=body)
 wordLimitEntry.place(relx=0.5, rely = 0.6, anchor=CENTER)

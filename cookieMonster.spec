@@ -5,7 +5,7 @@ a = Analysis(
     ['cookieMonster.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('Data/Cookie Monster Image.png', 'Data'), ('Data/noun-stop-button-4906815-FFFFFF.png', 'Data'), ('Data/noun-play-button-6441783-FFFFFF.png', 'Data'), ("Data/Count's Laugh 1.mp3", 'Data'), ('Data/Documents Completed-[AudioTrimmer.com]-[AudioTrimmer.com].mp3', 'Data'), ('Data/Cookie Instructions.mp3', 'Data')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
