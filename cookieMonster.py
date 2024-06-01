@@ -12,6 +12,7 @@ from pygame import mixer
 from pydub import AudioSegment
 from pydub.playback import play
 import time
+import win32com.client as win32
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -97,6 +98,7 @@ def process_paragraphs(paragraphs, find_chars, replace_text, delete_chars):
             logging.error(f"Error processing paragraph: {e}")
 
 def get_word_count(doc):
+    
     try:
         word_count = 0
         for paragraph in doc.paragraphs:
@@ -255,11 +257,11 @@ def stopIntro():
     mixer.music.stop()
 
 def playCount(): 
-    mixer.music.load(r"Data\Documents Completed-[AudioTrimmer.com]-[AudioTrimmer.com].mp3")
+    mixer.music.load(get_absolute_path("Data\Documents Completed-[AudioTrimmer.com]-[AudioTrimmer.com].mp3"))
     mixer.music.play()
     while mixer.music.get_busy():
         time.sleep(1)
-    mixer.music.load(r"Data\Count's Laugh 1.mp3")
+    mixer.music.load(get_absolute_path("Data\Count's Laugh 1.mp3"))
     mixer.music.play()
 mixer.init()
 
