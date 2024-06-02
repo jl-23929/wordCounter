@@ -9,8 +9,7 @@ def count_words_in_docx(input_folder):
     word_app.Visible = False  # Hide Word application window
 
     # Get all docx files in the specified folder
-    docx_files = [file for file in os.listdir(input_folder) if file.endswith('.docx')]
-
+    docx_files = [file for file in os.listdir(input_folder) if file.endswith('.docx') and file.startswith('Modified')]
     for docx_file in docx_files:
         try:
             # Open the Word document

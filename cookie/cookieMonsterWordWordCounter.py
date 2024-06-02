@@ -26,9 +26,9 @@ def batch_find_replace_delete_and_remove_chars(folder_path, find_chars, replace_
 
     fileProgress = 0
     # Create the output     
-    global modifiedFolder
-    modifiedFolder = os.path.join(folder_path, 'Modified Folder')
-    os.makedirs(modifiedFolder, exist_ok=True)
+  #  global modifiedFolder
+  #  modifiedFolder = os.path.join(folder_path, 'Modified Folder')
+  #  os.makedirs(modifiedFolder, exist_ok=True)
 
     files = os.listdir(folder_path)
     num_files = len(files)
@@ -61,8 +61,8 @@ def batch_find_replace_delete_and_remove_chars(folder_path, find_chars, replace_
                 process_paragraphs(section.footer.paragraphs, find_chars, replace_text, delete_chars)
             # Save the modified document with word count prepended to the file name
             global output_file_path
-            output_file_name = os.path.basename(docx_file)
-            output_file_path = os.path.join(modifiedFolder, output_file_name)
+            output_file_name = "Modified_" + os.path.basename(docx_file)
+            output_file_path = os.path.join(input_folder, output_file_name)
             doc.save(output_file_path)
             logging.info(f"Modified {docx_file} and saved to {output_file_path}")
     
@@ -154,12 +154,16 @@ def validate_and_get_word_limit(entry_widget):
         return None
 
 def start_sorting():
+    folderInputted = filedialog.askdirectory()
     word_limit = validate_and_get_word_limit(wordLimitEntry)
     if word_limit is None:
         return
     #updateGif()
-    batch_find_replace_delete_and_remove_chars(input_folder, find_chars, replace_text, delete_chars)
-    count_words_in_docx(modifiedFolder)
+    folderPath = os.path.abspath(folderInputted)
+    batch_find_replace_delete_and_remove_chars(folderInputted, find_chars, replace_text, delete_chars)
+    print(str(input_folder))
+    count_words_in_docx(folderPath)
+    
     os.startfile(output_file_path)
     playCount()
 
