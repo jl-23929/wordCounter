@@ -13,7 +13,8 @@ from pygame import mixer
 import time
 import win32com.client
 import shutil
-from WordWordCounter import count_words_in_docx
+from lxml import etree
+from WordWordCounter import count_words_in_docx, destroyModifiedFiles
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -39,12 +40,12 @@ def batch_find_replace_delete_and_remove_chars(folder_path, find_chars, replace_
             logging.info(f"Processing file: {docx_file}")
             # Open each docx file
             doc = Document(docx_file)
-            # Remove Bibliography
+            removeInTextCitations(doc.paragraphs)
+
             removeReferences(doc.paragraphs)
 
+            # Remove Bibliography
             removeBibliography(doc.paragraphs)
-
-            removeInTextCitations(doc.paragraphs)
 
             # Process paragraphs
             process_paragraphs(doc.paragraphs, find_chars, replace_text, delete_chars)
@@ -103,6 +104,9 @@ def removeInTextCitations(paragraphs):
 
     for paragraph in paragraphs:
         
+        updated_text = re.sub(r'\(\d{4}\)\s', '', paragraph.text)
+        paragraph.text = updated_text
+
         # Searches and replaces all instances of '(text, 1111)' with ''
         updated_text = re.sub(r'\([^,]+,\s\d{4}\)', '', paragraph.text)
         paragraph.text = updated_text
@@ -127,6 +131,8 @@ def removeReferences(paragraphs):
         updated_text = re.sub(r'.*\.\s\(\d{4}[^)]*\)\.\s.*', '', paragraph.text)
         paragraph.text = updated_text
 
+        updated_text = re.sub(r'.*\.\s\(n\.d\.\)\.\s.*', '', paragraph.text)
+        paragraph.text = updated_text
 
 def select_folder():
     global input_folder
@@ -134,12 +140,12 @@ def select_folder():
     input_folder = folder_selected
 
 # Define characters to find and replace with space (excluding "-", "_", "–", "⇌", and "⟶")
-find_chars = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ',', '.', '?', '!', ':', ';', '(', ')', '[', ']', '{', '}', '/', '\\', '*', '+', '=', '|', '&', '^', '%', '@', '~', '`', '"', "'", '°', '𝜃', '−', '×', '±', '≈', '∆', '>', '<', '>=', '<=', '=']
+find_chars = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ',', '.', '?', '!', ':', ';', '(', ')', '[', ']', '{', '}', '/', '\\', '*', '+', '=', '|', '&', '^', '%', '@', '~', '`', '"', "'", '°', '𝜃', '−', '×', '±', '≈', '∆', '>', '<', '>=', '<=', '=', 'J ', 'J.', 'ϕ', 'φ', 'Φ', 'Ω']
 
 replace_text = ' '
 
 # Define characters to delete (only if surrounded by spaces)
-delete_chars = ['M', 'V', 'Z', 'C', 'Q', 'Cu', 'Zn', 'Ag', 'NO', 'KNO', 'MnO', 'NaCl', 'kPa', 'mL', 'L', 'aq', 'l', 's', 'g', 'x', 'J' 'KWh' 'kWh' 'cm' 'm', 'kW', 'W', 'MW', 'RPM', 'rpm']
+delete_chars = ['M', 'V', 'Z', 'C', 'Q', 'Cu', 'Zn', 'Ag', 'NO', 'KNO', 'MnO', 'NaCl', 'kPa', 'mL', 'L', 'aq', 'l', 's', 'g', 'x' 'KWh' 'kWh' 'cm' 'm', 'kW', 'W', 'MW', 'RPM', 'rpm', 'CO2']
 
 def validate_and_get_word_limit(entry_widget):
     try:
@@ -154,18 +160,22 @@ def validate_and_get_word_limit(entry_widget):
         return None
 
 def start_sorting():
-    folderInputted = filedialog.askdirectory()
+    runLabel = customtkinter.CTkLabel(master=window, text="Chomping", font=body)
+    window.update()
+    runLabel.place(relx=0.7, rely=0.85, anchor=CENTER)
+    sortButton.configure(fg_color="#004f98")
     word_limit = validate_and_get_word_limit(wordLimitEntry)
     if word_limit is None:
         return
     #updateGif()
-    folderPath = os.path.abspath(folderInputted)
-    batch_find_replace_delete_and_remove_chars(folderInputted, find_chars, replace_text, delete_chars)
+    folderPath = os.path.abspath(input_folder)
+    batch_find_replace_delete_and_remove_chars(folderPath, find_chars, replace_text, delete_chars)
     print(str(input_folder))
-    count_words_in_docx(folderPath)
-    
-    os.startfile(output_file_path)
-    playCount()
+    count_words_in_docx(folderPath, wordLimitEntry.get())
+    destroyModifiedFiles(folderPath)
+    sortButton.configure(fg_color="#1c6ba3", text="Cookie Time!")
+    os.startfile(input_folder)
+    #playCount()
 
 
 window = customtkinter.CTk()
@@ -191,7 +201,7 @@ def get_asset_path(asset_type, filename):
 
 column1 = 0.1
 column2 = 0.3
-column3 = 0.45
+column3 = 0.5
 
 image_path = get_absolute_path("Data/Cookie Monster Image.png")
 soundIconPath = get_absolute_path("Data/noun-play-button-6441783-FFFFFF.png")
@@ -205,18 +215,18 @@ pil_soundIconPath = Image.open(soundIconPath)
 pil_image = Image.open(image_path)
 
 def playIntro():
-    mixer.music.load(r"Data\Cookie Instructions.mp3")
+    mixer.music.load(get_absolute_path(r"Data\Cookie Instructions.mp3"))
     mixer.music.play()
 
 def stopIntro():
     mixer.music.stop()
 
 def playCount(): 
-    mixer.music.load(get_absolute_path("Data\Documents Completed-[AudioTrimmer.com]-[AudioTrimmer.com].mp3"))
+    mixer.music.load(get_absolute_path(r"Data\Documents Completed-[AudioTrimmer.com]-[AudioTrimmer.com].mp3"))
     mixer.music.play()
     while mixer.music.get_busy():
         time.sleep(1)
-    mixer.music.load(get_absolute_path("Data\Count's Laugh 1.mp3"))
+    mixer.music.load(get_absolute_path(r"Data\Count's Laugh 1.mp3"))
     mixer.music.play()
 mixer.init()
 
@@ -240,22 +250,23 @@ boldBody = customtkinter.CTkFont(family="Arial", size=25, weight="bold")
 infoHeading = customtkinter.CTkLabel(window, text="Cookie Monster", font=bold, text_color="#004f98")
 infoHeading.place(relx=0.5, rely=column1, anchor=CENTER)
 
-infoLabel = customtkinter.CTkLabel(window, text="Select a folder of Word documents to \n process and enter a word limit. For \n more instructions press the play button.", font=body)
+infoLabel = customtkinter.CTkLabel(window, text="Select a folder of Word documents to \n process and enter a word limit. For \n more instructions press the play button. \n A class should take less than a minute to sort.", font=body)
 infoLabel.place(relx=0.5, rely=column2, anchor=CENTER)
 
 selectFolderLabel = customtkinter.CTkLabel(window, text="Select Folder:", font=body)
-selectFolderLabel.place(relx=0.2, rely = column3, anchor=CENTER)
+selectFolderLabel.place(relx=0.4, rely = column3, anchor=CENTER)
 
-folderEntry = customtkinter.CTkEntry(window, placeholder_text="Enter a path or browse", width=270, font=body)
-folderEntry.place(relx = 0.5, rely = column3, anchor=CENTER)
+#folderEntry = customtkinter.CTkEntry(window, placeholder_text="Enter a path or browse", width=270, font=body)
+#folderEntry.place(relx = 0.5, rely = column3, anchor=CENTER)
 
 browseButton = customtkinter.CTkButton(master=window, text="Browse", command=selectFolder, font=body)
-browseButton.place(relx=0.85, rely=column3, anchor=CENTER)
+browseButton.place(relx=0.6, rely=column3, anchor=CENTER)
 
 wordLimitEntry = customtkinter.CTkEntry(window, placeholder_text='Enter Word Limit', font=body)
 wordLimitEntry.place(relx=0.5, rely = 0.6, anchor=CENTER)
 
-sortButton = customtkinter.CTkButton(master=window, text="Cookie Time!", command=start_sorting, font=boldBody)
+global sortButton
+sortButton = customtkinter.CTkButton(master=window, text="Cookie Time!", command=start_sorting, font=boldBody, fg_color="#1c6ba3")
 sortButton.place(relx=0.5, rely=0.85, anchor = CENTER)
 
 window.mainloop()

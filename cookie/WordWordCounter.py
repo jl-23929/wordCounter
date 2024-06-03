@@ -3,7 +3,7 @@ import os
 import shutil
 import win32com.client
 
-def count_words_in_docx(input_folder):
+def count_words_in_docx(input_folder, wordLimit):
     # Initialize Word application
     word_app = win32com.client.Dispatch("Word.Application")
     word_app.Visible = False  # Hide Word application window
@@ -23,8 +23,20 @@ def count_words_in_docx(input_folder):
             doc.Close(SaveChanges=False)
 
             # Create a copy of the document with word count appended to filename
+
+            above_2000_folder = os.path.join(input_folder, 'Above ' + str(wordLimit)) 
+            already_under_2000_folder = os.path.join(input_folder, 'Already under ' + str(wordLimit))
+            os.makedirs(above_2000_folder, exist_ok=True)
+            os.makedirs(already_under_2000_folder, exist_ok=True)
+            
+            if word_count > int(wordLimit):
+                output_subfolder = above_2000_folder
+            else:
+                output_subfolder = already_under_2000_folder
+            
             new_file_name = f"{word_count}_{docx_file}"
-            new_file_path = os.path.join(input_folder, new_file_name)
+            new_file_path = os.path.join(output_subfolder, new_file_name)
+
             shutil.copyfile(doc_path, new_file_path)
 
             print(f"Word count for '{docx_file}': {word_count}. Copied to '{new_file_path}'")
@@ -34,3 +46,10 @@ def count_words_in_docx(input_folder):
 
     # Quit Word application
     word_app.Quit()
+
+def destroyModifiedFiles(input_folder):
+    docx_files = [file for file in os.listdir(input_folder) if file.endswith('.docx') and file.startswith('Modified')]
+
+    for docx_file in docx_files:
+        doc_path = os.path.join(input_folder, docx_file)
+        os.remove(doc_path)
