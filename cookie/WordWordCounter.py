@@ -53,3 +53,21 @@ def destroyModifiedFiles(input_folder):
     for docx_file in docx_files:
         doc_path = os.path.join(input_folder, docx_file)
         os.remove(doc_path)
+
+
+def searchTextBoxes(input_path):
+    word = win32com.client.Dispatch("Word.Application")
+    word.Visible = False
+    doc = word.Documents.Open(input_path)
+    try:
+        for sh in doc.Shapes:
+            if sh.Type == 17:
+                print(sh.Name)
+                print(sh.TextFrame.TextRange.Text)
+                doc.Range(0,0).InsertBefore(sh.TextFrame.TextRange.Text)
+        doc.Save()
+    except Exception as e:
+        print(f"Error processing file '{input_path}': {e}")
+    finally:
+        doc.Close()        
+        word.Quit()

@@ -14,7 +14,7 @@ import time
 import win32com.client
 import shutil
 from lxml import etree
-from WordWordCounter import count_words_in_docx, destroyModifiedFiles
+from WordWordCounter import count_words_in_docx, destroyModifiedFiles, searchTextBoxes
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -46,7 +46,8 @@ def batch_find_replace_delete_and_remove_chars(folder_path, find_chars, replace_
 
             # Remove Bibliography
             removeBibliography(doc.paragraphs)
-
+            
+            searchTextBoxes(os.path.abspath(os.path.join(folder_path, docx_file)))
             # Process paragraphs
             process_paragraphs(doc.paragraphs, find_chars, replace_text, delete_chars)
             
