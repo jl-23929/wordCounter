@@ -46,8 +46,8 @@ def batch_find_replace_delete_and_remove_chars(folder_path, find_chars, replace_
 
             # Remove Bibliography
             removeBibliography(doc.paragraphs)
-            
-            searchTextBoxes(os.path.abspath(os.path.join(folder_path, docx_file)))
+            newParagraph = doc.add_paragraph(str(searchTextBoxes(os.path.abspath(os.path.join(folder_path, docx_file)))))
+            doc.paragraphs[0]._element.addprevious(newParagraph._element)
             # Process paragraphs
             process_paragraphs(doc.paragraphs, find_chars, replace_text, delete_chars)
             
@@ -141,12 +141,12 @@ def select_folder():
     input_folder = folder_selected
 
 # Define characters to find and replace with space (excluding "-", "_", "–", "⇌", and "⟶")
-find_chars = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ',', '.', '?', '!', ':', ';', '(', ')', '[', ']', '{', '}', '/', '\\', '*', '+', '=', '|', '&', '^', '%', '@', '~', '`', '"', "'", '°', '𝜃', '−', '×', '±', '≈', '∆', '>', '<', '>=', '<=', '=', 'J ', 'J.', 'ϕ', 'φ', 'Φ', 'Ω']
+find_chars = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ',', '.', '?', '!', ':', ';', '(', ')', '[', ']', '{', '}', '/', '\\', '*', '+', '=', '|', '&', '^', '%', '@', '~', '`', '"', '°', '𝜃', '−', '×', '±', '≈', '∆', '>', '<', '>=', '<=', '=', 'J ', 'J.', 'ϕ', 'φ', 'Φ', 'Ω', 'Å', '𝜙']
 
 replace_text = ' '
 
 # Define characters to delete (only if surrounded by spaces)
-delete_chars = ['M', 'V', 'Z', 'C', 'Q', 'Cu', 'Zn', 'Ag', 'NO', 'KNO', 'MnO', 'NaCl', 'kPa', 'mL', 'L', 'aq', 'l', 's', 'g', 'x' 'KWh' 'kWh' 'cm' 'm', 'kW', 'W', 'MW', 'RPM', 'rpm', 'CO2']
+delete_chars = ['M', 'V', 'Z', 'C', 'Q', 'Cu', 'Zn', 'Ag', 'NO', 'KNO', 'MnO', 'NaCl', 'kPa', 'mL', 'L', 'aq', 'l', 's', 'g', 'x' 'KWh' 'kWh' 'cm' 'm', 'kW', 'W', 'MW', 'RPM', 'rpm', 'CO2', "'"]
 
 def validate_and_get_word_limit(entry_widget):
     try:
@@ -161,20 +161,18 @@ def validate_and_get_word_limit(entry_widget):
         return None
 
 def start_sorting():
-    runLabel = customtkinter.CTkLabel(master=window, text="Chomping", font=body)
-    window.update()
-    runLabel.place(relx=0.7, rely=0.85, anchor=CENTER)
-    sortButton.configure(fg_color="#004f98")
     word_limit = validate_and_get_word_limit(wordLimitEntry)
     if word_limit is None:
         return
+    sortButton.configure(text="Chomping...")
+    window.update()
     #updateGif()
     folderPath = os.path.abspath(input_folder)
     batch_find_replace_delete_and_remove_chars(folderPath, find_chars, replace_text, delete_chars)
     print(str(input_folder))
     count_words_in_docx(folderPath, wordLimitEntry.get())
     destroyModifiedFiles(folderPath)
-    sortButton.configure(fg_color="#1c6ba3", text="Cookie Time!")
+    sortButton.configure(text="Cookie Time!")
     os.startfile(input_folder)
     #playCount()
 
