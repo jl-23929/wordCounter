@@ -105,20 +105,21 @@ def removeInTextCitations(paragraphs):
 
     for paragraph in paragraphs:
         
+        #The space is required to prevent the removal of full references.
         updated_text = re.sub(r'\(\d{4}\)\s', '', paragraph.text)
         paragraph.text = updated_text
 
         # Searches and replaces all instances of '(text, 1111)' with ''
-        updated_text = re.sub(r'\([^,]+,\s\d{4}\)', '', paragraph.text)
+        updated_text = re.sub(r'\([^,^(]+,\s\d{4}\)', '', paragraph.text)
         paragraph.text = updated_text
 
 
         #Searches and replaces all instances of '(text, n.d.)' with ''
-        updated_text = re.sub(r'\([^,]+,\sn\.d\.\)', '', paragraph.text)
+        updated_text = re.sub(r'\([^,^(]+,\sn\.d\.\)', '', paragraph.text)
         paragraph.text = updated_text
 
         #Searches and replaces all instances of '(text, n.d)' with ''
-        updated_text = re.sub(r'\([^,]+,\sn\.d\)', '', paragraph.text)
+        updated_text = re.sub(r'\([^,^(]+,\sn\.d\)', '', paragraph.text)
         paragraph.text = updated_text
 
 def removeReferences(paragraphs):

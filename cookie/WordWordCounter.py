@@ -71,6 +71,6 @@ def searchTextBoxes(input_path):
     except Exception as e:
         print(f"Error processing file '{input_path}': {e}")
     finally:
-        doc.Close()        
+        doc.Close()
         word.Quit()
         return textBoxText
