@@ -20,16 +20,13 @@ def count_words_in_docx(input_folder, wordLimit):
             pattern = re.compile(r'\d')
 
             for story in doc.StoryRanges:
-                while True:
-                    match = pattern.search(story.Text)
-                    if not match:
-                        break
+                text = story.Text
 
-                    start = match.start()
-                    end = match.end()
-                    story.SetRange(story.Start + start, story.End + end)
+                new_text = pattern.sub("", text)
 
-                    story.Text = ""
+                if text != new_text:
+                    
+                    story.Text = new_text
 
                     #If not work: try story.Delete()
             
