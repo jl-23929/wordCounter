@@ -2,6 +2,7 @@
 import os
 import shutil
 import win32com.client
+import re
 
 def count_words_in_docx(input_folder, wordLimit):
     # Initialize Word application
@@ -15,6 +16,24 @@ def count_words_in_docx(input_folder, wordLimit):
             # Open the Word document
             doc_path = os.path.join(input_folder, docx_file)
             doc = word_app.Documents.Open(doc_path)
+
+            pattern = re.compile(r'\d')
+
+            for story in doc.StoryRanges:
+                while True:
+                    match = pattern.search(story.Text)
+                    if not match:
+                        break
+
+                    start = match.start()
+                    end = match.end()
+                    story.SetRange(story.Start + start, story.End + end)
+
+                    story.Text = ""
+
+                    #If not work: try story.Delete()
+            
+            doc.Save()
 
             # Count the words in the document
             word_count = doc.ComputeStatistics(0)  # 0 for wdStatisticWords

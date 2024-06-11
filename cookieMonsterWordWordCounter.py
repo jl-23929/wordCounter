@@ -40,42 +40,7 @@ def batch_find_replace_delete_and_remove_chars(folder_path, find_chars, replace_
             logging.info(f"Processing file: {docx_file}")
             # Open each docx file
             doc = Document(docx_file)
-            removeInTextCitations(doc.paragraphs)
 
-            removeReferences(doc.paragraphs)
-
-            # Remove Bibliography
-            removeBibliography(doc.paragraphs)
-            newParagraph = doc.add_paragraph(str(searchTextBoxes(os.path.abspath(os.path.join(folder_path, docx_file)))))
-            doc.paragraphs[0]._element.addprevious(newParagraph._element)
-            
-            images = []
-            for paragraph in doc.paragraphs:
-                for run in paragraph.runs:
-                    for pic in run.element.iter(tag=etree.Element):
-                        if pic.tag.endswith('}r'):
-                            for elem in pic.iter(tag=etree.Element):
-                                if elem.tag.endswith('}blip'):
-                                    images.append(elem.attrib)
-                
-            # Process paragraphs
-            process_paragraphs(doc.paragraphs, find_chars, replace_text, delete_chars)
-            
-            # Process tables
-            for table in doc.tables:
-                for row in table.rows:
-                    for cell in row.cells:
-                        process_paragraphs(cell.paragraphs, find_chars, replace_text, delete_chars)
-            
-            # Process headers and footers
-            for section in doc.sections:
-                process_paragraphs(section.header.paragraphs, find_chars, replace_text, delete_chars)
-                process_paragraphs(section.footer.paragraphs, find_chars, replace_text, delete_chars)
-            # Save the modified document with word count prepended to the file name
-
-            for image in images:
-                doc.add_picture(image)
-                
             global output_file_path
             output_file_name = "Modified_" + os.path.basename(docx_file)
             output_file_path = os.path.join(input_folder, output_file_name)
