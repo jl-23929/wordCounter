@@ -48,6 +48,16 @@ def batch_find_replace_delete_and_remove_chars(folder_path, find_chars, replace_
             removeBibliography(doc.paragraphs)
             newParagraph = doc.add_paragraph(str(searchTextBoxes(os.path.abspath(os.path.join(folder_path, docx_file)))))
             doc.paragraphs[0]._element.addprevious(newParagraph._element)
+            
+            images = []
+            for paragraph in doc.paragraphs:
+                for run in paragraph.runs:
+                    for pic in run.element.iter(tag=etree.Element):
+                        if pic.tag.endswith('}r'):
+                            for elem in pic.iter(tag=etree.Element):
+                                if elem.tag.endswith('}blip'):
+                                    images.append(elem.attrib)
+                
             # Process paragraphs
             process_paragraphs(doc.paragraphs, find_chars, replace_text, delete_chars)
             
@@ -62,6 +72,10 @@ def batch_find_replace_delete_and_remove_chars(folder_path, find_chars, replace_
                 process_paragraphs(section.header.paragraphs, find_chars, replace_text, delete_chars)
                 process_paragraphs(section.footer.paragraphs, find_chars, replace_text, delete_chars)
             # Save the modified document with word count prepended to the file name
+
+            for image in images:
+                doc.add_picture(image)
+                
             global output_file_path
             output_file_name = "Modified_" + os.path.basename(docx_file)
             output_file_path = os.path.join(input_folder, output_file_name)
@@ -75,6 +89,7 @@ def batch_find_replace_delete_and_remove_chars(folder_path, find_chars, replace_
 def process_paragraphs(paragraphs, find_chars, replace_text, delete_chars):
     for paragraph in paragraphs:
         try:
+            updated_text = re.sub(r'\d', '', paragraph.text)
             # Replace specified characters with spaces
             updated_text = re.sub(f"[{re.escape(''.join(find_chars))}]", replace_text, paragraph.text)
             paragraph.text = updated_text
@@ -112,7 +127,9 @@ def removeInTextCitations(paragraphs):
         # Searches and replaces all instances of '(text, 1111)' with ''
         updated_text = re.sub(r'\([^,^(]+,\s\d{4}\)', '', paragraph.text)
         paragraph.text = updated_text
-
+        
+        updated_text = re.sub(r'\([^,^(]+,\s\d{4}\w\)', '', paragraph.text)
+        paragraph.text = updated_text
 
         #Searches and replaces all instances of '(text, n.d.)' with ''
         updated_text = re.sub(r'\([^,^(]+,\sn\.d\.\)', '', paragraph.text)
@@ -135,6 +152,7 @@ def removeReferences(paragraphs):
 
         updated_text = re.sub(r'.*\.\s\(n\.d\.\)\.\s.*', '', paragraph.text)
         paragraph.text = updated_text
+        
 
 def select_folder():
     global input_folder
@@ -142,12 +160,12 @@ def select_folder():
     input_folder = folder_selected
 
 # Define characters to find and replace with space (excluding "-", "_", "–", "⇌", and "⟶")
-find_chars = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ',', '.', '?', '!', ':', ';', '(', ')', '[', ']', '{', '}', '/', '\\', '*', '+', '=', '|', '&', '^', '%', '@', '~', '`', '"', '°', '𝜃', '−', '×', '±', '≈', '∆', '>', '<', '>=', '<=', '=', 'J ', 'J.', 'ϕ', 'φ', 'Φ', 'Ω', 'Å', '𝜙']
+find_chars = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ',', '.', '?', '!', ':', ';', '(', ')', '[', ']', '{', '}', '/', '\\', '*', '+', '=', '|', '&', '^', '%', '@', '~', '`', '"', '°', '𝜃', '−', '×', '±', '≈', '∆', '>', '<', '>=', '<=', '=', 'ϕ', 'φ', 'Φ', 'Ω', 'Å', '𝜙']
 
 replace_text = ' '
 
 # Define characters to delete (only if surrounded by spaces)
-delete_chars = ['M', 'V', 'Z', 'C', 'Q', 'Cu', 'Zn', 'Ag', 'NO', 'KNO', 'MnO', 'NaCl', 'kPa', 'mL', 'L', 'aq', 'l', 's', 'g', 'x' 'KWh' 'kWh' 'cm' 'm', 'kW', 'W', 'MW', 'RPM', 'rpm', 'CO2', "'"]
+delete_chars = ['M', 'V', 'Z', 'C', 'Q', 'Cu', 'Zn', 'Ag', 'NO', 'KNO', 'MnO', 'NaCl', 'kPa', 'mL', 'L', 'aq', 'l', 's', 'g', 'x' 'KWh' 'kWh' 'cm' 'm', 'kW', 'W', 'MW', 'RPM', 'rpm', 'CO2', "'", "MHz", "km", "nm", "mV", "THz", "eV", "keV", "MeV", 'J', 'Hz', 'kHz']
 
 def validate_and_get_word_limit(entry_widget):
     try:
@@ -190,6 +208,7 @@ window.iconbitmap(icon_path)
 window.title("Cookie Monster")
 window.resizable(0,0)
 customtkinter.set_default_color_theme("blue")
+
 def selectFolder():
     global input_folder
     folder_selected = filedialog.askdirectory()

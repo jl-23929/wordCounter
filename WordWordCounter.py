@@ -24,15 +24,17 @@ def count_words_in_docx(input_folder, wordLimit):
 
             # Create a copy of the document with word count appended to filename
 
-            above_2000_folder = os.path.join(input_folder, 'Above ' + str(wordLimit)) 
-            already_under_2000_folder = os.path.join(input_folder, 'Already under ' + str(wordLimit))
+            #above_2000_folder = os.path.join(input_folder, 'Above ' + str(wordLimit)) 
+            above_2000_folder = os.path.join(input_folder, "Processed")
+            #already_under_2000_folder = os.path.join(input_folder, 'Already under ' + str(wordLimit))
             os.makedirs(above_2000_folder, exist_ok=True)
-            os.makedirs(already_under_2000_folder, exist_ok=True)
+            #os.makedirs(already_under_2000_folder, exist_ok=True)
             
             if word_count > int(wordLimit):
                 output_subfolder = above_2000_folder
             else:
-                output_subfolder = already_under_2000_folder
+                #output_subfolder = already_under_2000_folder
+                output_subfolder = above_2000_folder
             
             new_file_name = f"{word_count}_{docx_file}"
             new_file_path = os.path.join(output_subfolder, new_file_name)
