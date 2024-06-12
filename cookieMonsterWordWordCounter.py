@@ -14,7 +14,7 @@ import time
 import win32com.client
 import shutil
 from lxml import etree
-from WordWordCounter import count_words_in_docx, destroyModifiedFiles, searchTextBoxes
+from WordWordCounter import count_words_in_docx
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -152,10 +152,9 @@ def start_sorting():
     window.update()
     #updateGif()
     folderPath = os.path.abspath(input_folder)
-    batch_find_replace_delete_and_remove_chars(folderPath, find_chars, replace_text, delete_chars)
+    #batch_find_replace_delete_and_remove_chars(folderPath, find_chars, replace_text, delete_chars)
     print(str(input_folder))
     count_words_in_docx(folderPath, wordLimitEntry.get())
-    destroyModifiedFiles(folderPath)
     sortButton.configure(text="Cookie Time!")
     os.startfile(input_folder)
     #playCount()

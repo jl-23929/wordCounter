@@ -10,30 +10,35 @@ def count_words_in_docx(input_folder, wordLimit):
     word_app.Visible = False  # Hide Word application window
 
     # Get all docx files in the specified folder
-    docx_files = [file for file in os.listdir(input_folder) if file.endswith('.docx') and file.startswith('Modified')]
+    docx_files = [file for file in os.listdir(input_folder) if file.endswith('.docx')]
     for docx_file in docx_files:
         try:
             # Open the Word document
             doc_path = os.path.join(input_folder, docx_file)
             doc = word_app.Documents.Open(doc_path)
 
-            pattern = re.compile(r'\d')
 
-            for story in doc.StoryRanges:
-                text = story.Text
 
-                new_text = pattern.sub("", text)
+            patterns = [',', '-', '=', '𝜃', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '?', ':', ';', '(', ')', '[', ']', '{', '}', '/', '*', '+', '=', '|', '&', '%', '@', '~', '`', '"', '°', '−', '×', '±', '≈', '∆', '>', '<', '>=', '<=', '=', 'ϕ', 'φ', 'Φ', 'Ω', 'Å', '𝜙']            #Had to remove !, \\  and ^
 
-                if text != new_text:
-                    
-                    story.Text = new_text
+            content = doc.Content
+
+            for pattern in patterns:
+                find = content.Find
+                find.ClearFormatting()
+
+                find.Text = pattern
+                find.Replacement.ClearFormatting()
+                find.Replacement.Text = ""
+                find.Execute(Replace=2, MatchWildcards=False)
+                print(f"Removed {pattern} from {docx_file}")
 
                     #If not work: try story.Delete()
             
             doc.Save()
 
             # Count the words in the document
-            word_count = doc.ComputeStatistics(0)  # 0 for wdStatisticWords
+            word_count = doc.ComputeStatistics(0, True)  # 0 for wdStatisticWords
 
             # Close the document without saving changes
             doc.Close(SaveChanges=False)
@@ -64,14 +69,6 @@ def count_words_in_docx(input_folder, wordLimit):
 
     # Quit Word application
     word_app.Quit()
-
-def destroyModifiedFiles(input_folder):
-    docx_files = [file for file in os.listdir(input_folder) if file.endswith('.docx') and file.startswith('Modified')]
-
-    for docx_file in docx_files:
-        doc_path = os.path.join(input_folder, docx_file)
-        os.remove(doc_path)
-
 
 def searchTextBoxes(input_path):
     textBoxText = []
