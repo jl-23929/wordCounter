@@ -70,17 +70,6 @@ def process_paragraphs(paragraphs, find_chars, replace_text, delete_chars):
 
 input_folder = ''
 
-def removeBibliography(paragraphs):
-    inBibliography = False
-
-    for paragraph in paragraphs:
-
-        if inBibliography:
-            paragraph.clear()
-        elif re.match(r'Bibliography', paragraph.text) or re.match(r'Reference List', paragraph.text) or re.match(r'References', paragraph.text) or re.match(r'Citations', paragraph.text) or re.match(r'References Cited', paragraph.text):
-            
-            inBibliography = True
-
 def removeInTextCitations(paragraphs):
 
     for paragraph in paragraphs:
@@ -103,21 +92,6 @@ def removeInTextCitations(paragraphs):
         #Searches and replaces all instances of '(text, n.d)' with ''
         updated_text = re.sub(r'\([^,^(]+,\sn\.d\)', '', paragraph.text)
         paragraph.text = updated_text
-
-def removeReferences(paragraphs):
-
-    for paragraph in paragraphs:
-        #Searches for everything before references of the format '. (1111). .' and everything after.
-        updated_text = re.sub(r'.*\.\s\(\d{4}\)\.\s.*', '', paragraph.text)
-        paragraph.text = updated_text
-        
-        #Searches for references of the format '. (1111, Month, Day). .'
-        updated_text = re.sub(r'.*\.\s\(\d{4}[^)]*\)\.\s.*', '', paragraph.text)
-        paragraph.text = updated_text
-
-        updated_text = re.sub(r'.*\.\s\(n\.d\.\)\.\s.*', '', paragraph.text)
-        paragraph.text = updated_text
-        
 
 def select_folder():
     global input_folder
@@ -169,7 +143,7 @@ def get_absolute_path(relative_path):
 window.geometry("700x400+600+300")
 icon_path = get_absolute_path("Data/Monster.ico")
 window.iconbitmap(icon_path)
-window.title("Cookie Monster")
+window.title("CYAN")
 window.resizable(0,0)
 customtkinter.set_default_color_theme("blue")
 
@@ -216,9 +190,9 @@ mixer.init()
 
 stopImage = customtkinter.CTkImage(light_image=pil_soundStopPath, dark_image=pil_soundStopPath, size=(50,50))
 soundImage = customtkinter.CTkImage(light_image=pil_soundIconPath, dark_image=pil_soundIconPath, size=(50, 50))
-image = customtkinter.CTkImage(light_image=pil_image, dark_image=pil_image, size=(200,200))
-imageLabel = customtkinter.CTkLabel(window, image=image, text="")
-imageLabel.place(relx = 0.2, rely = 0.75, anchor=CENTER)
+#image = customtkinter.CTkImage(light_image=pil_image, dark_image=pil_image, size=(200,200))
+#imageLabel = customtkinter.CTkLabel(window, image=image, text="")
+#imageLabel.place(relx = 0.2, rely = 0.75, anchor=CENTER)
 
 soundImageButton = customtkinter.CTkButton(window, image=soundImage, text="", width=55, command=playIntro)
 
@@ -230,7 +204,7 @@ body = customtkinter.CTkFont(family="Arial", size=16)
 boldBody = customtkinter.CTkFont(family="Arial", size=25, weight="bold")
 
 
-infoHeading = customtkinter.CTkLabel(window, text="Cookie Monster", font=bold, text_color="#004f98")
+infoHeading = customtkinter.CTkLabel(window, text="CYAN", font=bold, text_color="#004f98")
 infoHeading.place(relx=0.5, rely=column1, anchor=CENTER)
 
 infoLabel = customtkinter.CTkLabel(window, text="Select a folder of Word documents to \n process and enter a word limit. For \n more instructions press the play button. \n A class should take less than a minute to sort.", font=body)

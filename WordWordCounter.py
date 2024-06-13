@@ -3,11 +3,24 @@ import os
 import shutil
 import win32com.client
 import re
+from docx import Document
 
 def count_words_in_docx(input_folder, wordLimit):
     # Initialize Word application
     word_app = win32com.client.Dispatch("Word.Application")
     word_app.Visible = False  # Hide Word application window
+
+    docx_files1 = [file for file in os.listdir(input_folder) if file.endswith('.docx')]
+
+    for docx_file in docx_files1:
+        try:
+            doc_path = os.path.join(input_folder, docx_file)
+            doc = Document(doc_path)
+
+            #removences(doc_path)
+            removeBibliography(doc_path)
+        except Exception as e:
+            print(f"Error processing file '{docx_file}': {e}")
 
     # Get all docx files in the specified folder
     docx_files = [file for file in os.listdir(input_folder) if file.endswith('.docx')]
@@ -16,10 +29,13 @@ def count_words_in_docx(input_folder, wordLimit):
             # Open the Word document
             doc_path = os.path.join(input_folder, docx_file)
             doc = word_app.Documents.Open(doc_path)
-
-
-
-            patterns = [',', '-', '=', '𝜃', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '?', ':', ';', '(', ')', '[', ']', '{', '}', '/', '*', '+', '=', '|', '&', '%', '@', '~', '`', '"', '°', '−', '×', '±', '≈', '∆', '>', '<', '>=', '<=', '=', 'ϕ', 'φ', 'Φ', 'Ω', 'Å', '𝜙']            #Had to remove !, \\  and ^
+            patterns = [',', '=', '𝜃', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '?', ':', ';', '(', ')', '[', ']', '{', '}', '/', '*', '+', '=', '|', '&', '%', '@',
+                         '~', '`', '"', '°', '−', '×', '±', '≈', '∆', '>', '<', '>=', '<=', '=', 'ϕ', 'φ', 'Φ', 'Ω', 'Å', '𝜙', ' NaCl ', ' kPa ', ' mL ', ' L ', ' aq ', ' l ', ' s ', 
+                         ' g ', ' x ', ' KWh ', ' kWh ', ' cm ', ' m ', ' kW ', ' W ', ' MW ', ' RPM ', ' rpm ', ' CO2 ', " ' ", ' MHz ', ' km ', ' nm ', ' mV ', ' THz ', ' eV ', 
+                         ' keV ', ' MeV ', ' J ', ' Hz ', ' kHz ']
+            
+            
+            #Had to remove !, \\  and ^
 
             content = doc.Content
 
@@ -35,10 +51,18 @@ def count_words_in_docx(input_folder, wordLimit):
 
                     #If not work: try story.Delete()
             
-            doc.Save()
+            find.Text = "-"
+            find.ClearFormatting()
+            find.Replacement.ClearFormatting()
+            find.Replacement.Text = " "
+            find.Execute(Replace=2, MatchWildcards=False)
+            print(f"Removed - from {docx_file}")
 
+            doc.SaveAs(f"Processed_{docx_file}")
+
+                
             # Count the words in the document
-            word_count = doc.ComputeStatistics(0, True)  # 0 for wdStatisticWords
+            word_count = doc.ComputeStatistics(0, True)  # 0 for wdStatisticWords, True for including textboxes
 
             # Close the document without saving changes
             doc.Close(SaveChanges=False)
@@ -69,23 +93,35 @@ def count_words_in_docx(input_folder, wordLimit):
 
     # Quit Word application
     word_app.Quit()
+    
+def removeReferences(file_path):
+    doc = Document(file_path)
 
-def searchTextBoxes(input_path):
-    textBoxText = []
-    word = win32com.client.Dispatch("Word.Application")
-    word.Visible = False
-    doc = word.Documents.Open(input_path)
-    try:
-        for sh in doc.Shapes:
-            if sh.Type == 17:
-                print(sh.Name)
-                print(sh.TextFrame.TextRange.Text)
-                #doc.Range(0,0).InsertBefore(sh.TextFrame.TextRange.Text)
-                textBoxText.append(sh.TextFrame.TextRange.Text)
-        doc.Save()
-    except Exception as e:
-        print(f"Error processing file '{input_path}': {e}")
-    finally:
-        doc.Close()
-        word.Quit()
-        return textBoxText
+    for paragraph in doc.paragraphs:
+        for run in paragraph.runs:
+            run_text = run.text
+            # Search for references and remove them while preserving formatting
+            new_text = re.sub(r'.*\.\s\(\d{4}\)\.\s.*', '', run_text)
+            new_text = re.sub(r'.*\.\s\(\d{4}[^)]*\)\.\s.*', '', new_text)
+            new_text = re.sub(r'.*\.\s\(n\.d\.\)\.\s.*', '', new_text)
+            if new_text != run_text:
+                run.text = new_text
+
+    # Save changes back to the document
+    doc.save(file_path)
+def removeBibliography(file_path):
+
+    doc = Document(file_path)
+
+    inBibliography = False
+
+    paragraphs = doc.paragraphs
+
+    for paragraph in paragraphs:
+
+        if inBibliography:
+            paragraph.clear()
+        elif re.match(r'Bibliography', paragraph.text) or re.match(r'Reference List', paragraph.text) or re.match(r'References', paragraph.text) or re.match(r'Citations', paragraph.text) or re.match(r'References Cited', paragraph.text):
+            
+            inBibliography = True
+    doc.save(file_path)
